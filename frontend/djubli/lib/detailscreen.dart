@@ -1,17 +1,14 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:djubli/class/car.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flushbar/flutter_flushbar.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'globals.dart' as glenv;
 
 class DetailScreen extends StatefulWidget {
   final Car car;
-  DetailScreen({required this.car, Key? key}) : super(key: key);
+  const DetailScreen({required this.car, Key? key}) : super(key: key);
 
   @override
   _DetailScreenState createState() => _DetailScreenState();
@@ -26,7 +23,6 @@ class _DetailScreenState extends State<DetailScreen> {
   //connect to server
   final IO.Socket socket = IO.io(glenv.ipnumber, <String, dynamic>{
     'transports': ['websocket'],
-    'query': {'room': '2'}, // Add room information here
   });
 
   @override
@@ -34,7 +30,8 @@ class _DetailScreenState extends State<DetailScreen> {
     // TODO: implement initState
     super.initState();
     //socket
-    socket.emit("join_room", "2");
+    socket.connect();
+    socket.emit("join_room", widget.car.id);
     socket.on("receive_message", (message) {
       print(message["message"]);
       setState(() {
@@ -58,9 +55,11 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void dispose() {
     _commentController.dispose();
-    super.dispose();
     //disconnecting socket
     socket.disconnect();
+    socket.emit("leave_room", widget.car.id);
+    socket.off("receive_message");
+    super.dispose();
   }
 
   final List<String> comments = [];
@@ -218,7 +217,7 @@ class _DetailScreenState extends State<DetailScreen> {
                             String comment = _commentController.text;
 
                             socket.emit("send_message",
-                                {"room": '2', "message": comment});
+                                {"room": widget.car.id, "message": comment});
                           },
                         ),
                       ],

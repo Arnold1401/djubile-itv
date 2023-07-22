@@ -41,7 +41,7 @@ class _CarScreenPromotionState extends State<CarScreenPromotion> {
   }
 
   Future<List<Car>> fetchMyCar() async {
-    var url = Uri.parse('${gl.ipnumber}/cars/mycar');
+    var url = Uri.parse('${gl.ipnumber}/cars/promotion');
 
 // Add headers to the request
     var headers = {
@@ -78,7 +78,7 @@ class _CarScreenPromotionState extends State<CarScreenPromotion> {
                 if (value == 'menu1') {
                   Navigator.pushNamed(context, '/mycar');
                 } else if (value == 'menu2') {
-                  Navigator.pushReplacementNamed(context, "/my");
+                  Navigator.pushReplacementNamed(context, "/");
                 }
               },
               itemBuilder: (context) => [

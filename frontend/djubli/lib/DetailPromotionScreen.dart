@@ -1,17 +1,15 @@
 import 'dart:async';
-import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:djubli/class/car.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flushbar/flutter_flushbar.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'globals.dart' as glenv;
 
 class DetailCarPromotion extends StatefulWidget {
   final Car car;
-  DetailCarPromotion({required this.car, Key? key}) : super(key: key);
+  const DetailCarPromotion({required this.car, Key? key}) : super(key: key);
 
   @override
   _DetailCarPromotionState createState() => _DetailCarPromotionState();
@@ -26,28 +24,31 @@ class _DetailCarPromotionState extends State<DetailCarPromotion> {
   //connect to server
   final IO.Socket socket = IO.io(glenv.ipnumber, <String, dynamic>{
     'transports': ['websocket'],
-    'query': {'room': '2'}, // Add room information here
   });
+  Timer? timer1;
+  Timer? timer2;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     //socket
-    socket.emit("join_room", "2");
+    socket.connect();
+    print("room skrg" + widget.car.id.toString());
+    socket.emit("join_room", widget.car.id);
     socket.on("receive_message", (message) {
       print(message["message"]);
+
       setState(() {
         newComment = message["message"];
         qtyComment += 1;
         comments.add(message["message"]);
       });
-      Timer(Duration(seconds: 1), () {
+      timer1 = Timer(Duration(seconds: 1), () {
         setState(() {
           isVisible = true;
         });
       });
-      Timer(Duration(seconds: 5), () {
+      timer2 = Timer(Duration(seconds: 5), () {
         setState(() {
           isVisible = false;
         });
@@ -58,9 +59,14 @@ class _DetailCarPromotionState extends State<DetailCarPromotion> {
   @override
   void dispose() {
     _commentController.dispose();
-    super.dispose();
+    timer1?.cancel();
+    timer2?.cancel();
     //disconnecting socket
+
     socket.disconnect();
+    socket.emit("leave_room", widget.car.id);
+    socket.off("receive_message");
+    super.dispose();
   }
 
   final List<String> comments = [];
@@ -210,7 +216,7 @@ class _DetailCarPromotionState extends State<DetailCarPromotion> {
                             String comment = _commentController.text;
 
                             socket.emit("send_message",
-                                {"room": '2', "message": comment});
+                                {"room": widget.car.id, "message": comment});
                           },
                         ),
                       ],

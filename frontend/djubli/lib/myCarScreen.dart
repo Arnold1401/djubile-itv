@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'globals.dart' as gl;
 import 'package:djubli/class/car.dart';
 import 'package:flutter/material.dart';
@@ -52,26 +51,6 @@ class _MyCarScreenState extends State<MyCarScreen> {
     }
   }
 
-  void _showAlertDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Alert'),
-          content: Text('This is an example of AlertDialog.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void deleteCar(Car car) async {
     var url = Uri.parse('${gl.ipnumber}/cars/${car.id}');
 
@@ -102,14 +81,14 @@ class _MyCarScreenState extends State<MyCarScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Delete Item'),
+          title: const Text('Delete Item'),
           content: Text('Are you sure you want delete ${car.carName} ?'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
-              child: Text('Cancel'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
@@ -120,10 +99,10 @@ class _MyCarScreenState extends State<MyCarScreen> {
                 Navigator.of(context).pop(); // Close the dialog
                 // Show a toast or snackbar confirming the deletion
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Item deleted')),
+                  const SnackBar(content: Text('Item deleted')),
                 );
               },
-              child: Text('Delete'),
+              child: const Text('Delete'),
             ),
           ],
         );
@@ -220,7 +199,7 @@ class GridItem extends StatelessWidget {
           ),
           const SizedBox(height: 10.0),
           Container(
-            padding: EdgeInsets.only(left: 15, right: 15),
+            padding: const EdgeInsets.only(left: 15, right: 15),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -237,7 +216,7 @@ class GridItem extends StatelessWidget {
                     backgroundColor: Colors.red,
                   ),
                   onPressed: () => {showoption()},
-                  child: Icon(Icons.delete),
+                  child: const Icon(Icons.delete),
                 )
               ],
             ),
