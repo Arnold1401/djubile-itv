@@ -10,9 +10,9 @@ const { authN } = require("../middleware/authN");
 router.post("/register", userController.register);
 router.post("/login", userController.login); // Login
 router.get("/cars/promotion", carController.getallcar);
-
+router.get("/carcomment/:carId", carCommentController.getComment);
 //AUTHENTICATION
-router.use(authN);
+// router.use(authN);
 //CAR CONTROLLER
 router.get("/cars/mycar", carController.getmycar); // Read
 router.post("/cars/add", carController.addCar); // Create
@@ -21,7 +21,7 @@ router.put("/cars/:carId", carController.updateCar); // Update
 router.delete("/cars/:carId", carController.deleteCar); // Delete
 
 //CarComment Controller
-router.post("/carcomment/add", carCommentController.addComment);
+// router.post("/carcomment/add", carCommentController.addComment);
 router.get("/carcomment/:carId", carCommentController.getComment);
 
 //ERROR handler

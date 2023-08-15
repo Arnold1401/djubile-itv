@@ -142,6 +142,8 @@ class Controller {
     }
   }
 
+  static async updatePromotion(request, response, next) {}
+
   static async deleteCar(request, response, next) {
     const { carId } = request.params;
 

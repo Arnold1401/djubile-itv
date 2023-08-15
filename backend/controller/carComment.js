@@ -1,8 +1,8 @@
 const { CarComment, User } = require("../models");
 
 class Controller {
-  static async addComment(request, response, next) {
-    const { carId, userId, text } = request.body;
+  static async addComment(request) {
+    const { carId, text, userId } = request;
     try {
       const createdCarComment = await CarComment.create({
         carId,
@@ -14,16 +14,10 @@ class Controller {
         throw { name: "err_addcar", message: createdCarComment };
       }
 
-      response.status(201).json({
-        statusCode: 201,
-        data: {
-          carId,
-          userId,
-          text,
-        },
-      });
+      console.log(createdCarComment);
     } catch (error) {
-      next(error);
+      //next(error);
+      console.log(error);
     }
   }
 
@@ -33,13 +27,9 @@ class Controller {
     try {
       const comments = await CarComment.findAll({
         where: { carId },
-        include: [{ model: User, attributes: ["id", "name", "phone"] }],
       });
 
-      response.status(200).json({
-        statusCode: 200,
-        data: comments,
-      });
+      response.status(200).json(comments);
     } catch (error) {
       next(error);
     }
