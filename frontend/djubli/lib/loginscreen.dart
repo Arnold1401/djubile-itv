@@ -175,6 +175,11 @@ class _LoginScreenState extends State<LoginScreen> {
     await prefs.setString('access_token', accessToken);
   }
 
+  Future<void> saveUserId(String userId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userId', userId);
+  }
+
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
       context: context,
@@ -223,7 +228,7 @@ class _LoginScreenState extends State<LoginScreen> {
       //because the response from server it cover with {statusCode:200,data:{...}}
       User user = User.fromJson(jsonDecode(response.body)["data"]);
       saveAccessToken(user.access_token);
-
+      saveUserId(user.id.toString());
       Navigator.pushReplacementNamed(context, '/promotion');
     } else {
       var responseData = json.decode(response.body);

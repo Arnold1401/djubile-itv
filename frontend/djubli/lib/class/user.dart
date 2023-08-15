@@ -1,9 +1,9 @@
 class User {
-  final int id;
+  final int? id;
   final String name;
   final String phone;
   final String access_token;
-  final String message;
+  final String? message;
 
   const User({
     required this.id,
@@ -18,7 +18,7 @@ class User {
         phone: json['phone'],
         name: json['name'],
         id: json['id'],
-        access_token: json['access_token'],
-        message: json['data'] == null ? "" : json['data']);
+        access_token: json['access_token'] == null ? "" : json["access_token"],
+        message: json['data'] == null ? "" : json["data"]);
   }
 }

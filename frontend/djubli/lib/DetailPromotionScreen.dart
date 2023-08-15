@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:djubli/class/car.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_flushbar/flutter_flushbar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import 'globals.dart' as glenv;
+import 'package:http/http.dart' as http;
+import 'class/comment.dart';
 
 class DetailCarPromotion extends StatefulWidget {
   final Car car;
@@ -28,6 +32,7 @@ class _DetailCarPromotionState extends State<DetailCarPromotion> {
   Timer? timer1;
   Timer? timer2;
 
+  late Future<List<Comment>> _commentFuture;
   @override
   void initState() {
     super.initState();
@@ -54,6 +59,35 @@ class _DetailCarPromotionState extends State<DetailCarPromotion> {
         });
       });
     });
+  }
+
+  Future<String?> getUserId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userId');
+  }
+
+  Future<List<Comment>> fetchComment() async {
+    var url = Uri.parse('${glenv.ipnumber}/carcomment/${widget.car.id}');
+
+// Add headers to the request
+    var headers = {
+      'Content-Type': 'application/json', // Add your desired headers here
+    };
+
+    var response = await http.get(url, headers: headers);
+
+    if (response.statusCode == 200) {
+      // If the server did return a 200 OK response,
+      // then parse the JSON.
+
+      final List<dynamic> parsedComment = jsonDecode(response.body);
+      print(parsedComment);
+      return parsedComment.map((e) => Comment.fromJson(e)).toList();
+    } else {
+      // If the server did not return a 200 OK response,
+      // then throw an exception.
+      throw Exception('Failed to load car');
+    }
   }
 
   @override
@@ -88,41 +122,60 @@ class _DetailCarPromotionState extends State<DetailCarPromotion> {
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return SingleChildScrollView(
-            child: Container(
-                child: Column(children: [
-          Container(
-            padding: EdgeInsets.only(left: 15),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Comments',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+        return FutureBuilder<List<Comment>>(
+          future: _commentFuture,
+          builder: (context, snapshot) {
+            // print(snapshot);
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // If the data is still loading, show a progress indicator
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else if (snapshot.hasError) {
+              // If there was an error while fetching the data, show an error message
+              return const Center(
+                child: Text('Error loading data'),
+              );
+            } else {
+              List<Comment> comments = snapshot.data!;
+              return SingleChildScrollView(
+                  child: Container(
+                      child: Column(children: [
+                Container(
+                  padding: EdgeInsets.only(left: 15),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '${comments.length} Comments',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                IconButton(
-                  icon: Icon(Icons.close),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: 200,
-            child: ListView.builder(
-                itemCount: comments.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(comments[index]),
-                  );
-                }),
-          )
-        ])));
+                Container(
+                  height: 200,
+                  child: ListView.builder(
+                      itemCount: comments.length,
+                      itemBuilder: (context, index) {
+                        return ListTile(
+                          title: Text(comments[index].message),
+                        );
+                      }),
+                )
+              ])));
+            }
+          },
+        );
       },
     );
   }
@@ -185,14 +238,25 @@ class _DetailCarPromotionState extends State<DetailCarPromotion> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${qtyComment} Comment',
-                          style: TextStyle(fontSize: 18),
-                        ),
+                        Container(
+                          child: Row(
+                            children: [
+                              Icon(Icons.chat_bubble),
+                              Text(
+                                'Comment',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ],
+                          ),
+                        )
                       ],
                     ),
                   ),
-                  onTap: () => {_showBottomSheet(context)},
+                  onTap: () {
+                    //fetch comment
+                    _commentFuture = fetchComment();
+                    _showBottomSheet(context);
+                  },
                 ),
                 Padding(
                   padding: EdgeInsets.all(10),
@@ -212,17 +276,20 @@ class _DetailCarPromotionState extends State<DetailCarPromotion> {
                         ),
                         IconButton(
                           icon: Icon(Icons.send),
-                          onPressed: () {
+                          onPressed: () async {
                             String comment = _commentController.text;
 
-                            socket.emit("send_message",
-                                {"room": widget.car.id, "message": comment});
+                            socket.emit("send_message", {
+                              "userId": await getUserId(),
+                              "room": widget.car.id,
+                              "message": comment,
+                            });
                           },
                         ),
                       ],
                     ),
                   ),
-                )
+                ),
               ],
             ),
           )

@@ -186,10 +186,17 @@ class _DetailScreenState extends State<DetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '${qtyComment} Comment',
-                          style: TextStyle(fontSize: 18),
-                        ),
+                        Container(
+                          child: Row(
+                            children: [
+                              Icon(Icons.chat_bubble),
+                              Text(
+                                'Comment',
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            ],
+                          ),
+                        )
                       ],
                     ),
                   ),
