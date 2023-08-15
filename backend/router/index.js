@@ -12,7 +12,7 @@ router.post("/login", userController.login); // Login
 router.get("/cars/promotion", carController.getallcar);
 router.get("/carcomment/:carId", carCommentController.getComment);
 //AUTHENTICATION
-// router.use(authN);
+router.use(authN);
 //CAR CONTROLLER
 router.get("/cars/mycar", carController.getmycar); // Read
 router.post("/cars/add", carController.addCar); // Create

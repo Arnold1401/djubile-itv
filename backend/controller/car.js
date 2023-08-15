@@ -13,6 +13,7 @@ class Controller {
     } = request.body;
     const userId = request.currentId;
 
+    const status = "z";
     try {
       const createdCar = await Car.create({
         userId,
@@ -24,6 +25,7 @@ class Controller {
         Address,
         mileage,
         carPicture,
+        status,
       });
 
       if (!createdCar) {
@@ -68,7 +70,11 @@ class Controller {
 
   static async getallcar(request, response, next) {
     try {
-      const car = await Car.findAll();
+      const car = await Car.findAll({
+        order: [
+          ["status", "ASC"], // or 'DESC' for descending
+        ],
+      });
 
       if (!car) {
         throw { name: "err_getcar", message: "Car not found" };
@@ -108,9 +114,11 @@ class Controller {
       price,
       Address,
       mileage,
+
       carPicture,
     } = request.body;
 
+    const status = "z";
     try {
       const [updatedRowCount, updatedCars] = await Car.update(
         {
@@ -120,6 +128,7 @@ class Controller {
           price,
           Address,
           mileage,
+          status,
           carPicture,
         },
         {
@@ -163,6 +172,25 @@ class Controller {
     } catch (error) {
       console.log("ini error deletecar (1)", error.message);
       next(error);
+    }
+  }
+
+  static async updating(request, response, next) {
+    const status = "a";
+
+    try {
+      const [updatedRowCount, updatedCars] = await Car.update(
+        {
+          status,
+        },
+        { where: { id: [1, 2, 3, 4, 5, 6, 7, 8, 9] }, returning: true }
+      );
+
+      if (updatedRowCount === 0) {
+        throw { name: "err_updatecar", message: "Car not found" };
+      }
+    } catch (error) {
+      console.log("ini error updatecar (1)", error.message);
     }
   }
 }

@@ -6,10 +6,12 @@ const PORT = 3001;
 const cors = require("cors");
 
 const CarComment = require("./controller/carComment");
+const Car = require("./controller/car");
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+Car.updating();
 // app
 app.use(router);
 // WebSocket connections
@@ -54,14 +56,14 @@ io.on("connection", (socket) => {
     const req = { userId, carId, text };
 
     CarComment.addComment(req);
-    socket.to(data.room).emit("receive_message", data);
+    CarComment.socket.to(data.room).emit("receive_message", data);
   });
 });
 
 // ---- CRON JOBS
-// const sendNotification = require("./sendnotif");
-// sendNotification.start();
-//----
+const sendNotification = require("./sendnotif");
+sendNotification.start();
+// ----
 
 // Start the server
 const port = 3001;
